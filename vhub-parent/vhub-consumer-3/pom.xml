@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.virtusa.vhub</groupId>
-		<artifactId>vhub-hub-parent</artifactId>
+		<artifactId>vhub-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>vhub-consumer-3</artifactId>
