@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.3.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.3.0 http://karaf.apache.org/xmlns/features/v1.3.0"
+	name="vhub-all">
+	<repository>mvn:com.virtusa.vhub/vhub-shared/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-hub/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-partner-1/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-partner-2/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-partner-3/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-consumer-1/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-consumer-2/0.0.1-SNAPSHOT/xml/features</repository>
+	<repository>mvn:com.virtusa.vhub/vhub-consumer-3/0.0.1-SNAPSHOT/xml/features</repository>
+
+	<feature name="vhub-all" description="vHub All" version="0.0.1.SNAPSHOT">
+		<details>vHub Parent</details>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_hub.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-hub/0.0.1-SNAPSHOT/cfg/config</configfile>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_partner_1.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-partner-1/0.0.1-SNAPSHOT/cfg/config</configfile>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_partner_2.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-partner-2/0.0.1-SNAPSHOT/cfg/config</configfile>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_partner_3.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-partner-3/0.0.1-SNAPSHOT/cfg/config</configfile>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_consumer_1.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-consumer-1/0.0.1-SNAPSHOT/cfg/config</configfile>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_consumer_2.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-consumer-2/0.0.1-SNAPSHOT/cfg/config</configfile>
+		<configfile finalname="/etc/com.virtusa.vhub.vhub_consumer_3.cfg"
+			override="true">mvn:com.virtusa.vhub/vhub-consumer-3/0.0.1-SNAPSHOT/cfg/config</configfile>
+
+		<feature>vhub-shared</feature>
+		<feature>vhub-hub</feature>
+		<feature>vhub-partner-1</feature>
+		<feature>vhub-partner-2</feature>
+		<feature>vhub-partner-3</feature>
+		<feature>vhub-consumer-1</feature>
+		<feature>vhub-consumer-2</feature>
+		<feature>vhub-consumer-3</feature>
+	</feature>
+
+</features>
