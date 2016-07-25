@@ -6,9 +6,9 @@
 		<groupId>com.virtusa.vhub</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>vhub-partner-1</artifactId>
-	<name>vHub Partner 1</name>
-	<description>vHub Partner 1</description>
+	<artifactId>vhub-partner-3</artifactId>
+	<name>vHub Partner 3</name>
+	<description>vHub Partner 3</description>
 	<packaging>bundle</packaging>
 	<dependencies>
 		<dependency>

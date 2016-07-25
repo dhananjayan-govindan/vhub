@@ -12,6 +12,8 @@
 		<module>vhub-shared</module>
 		<module>vhub-hub</module>
 		<module>vhub-partner-1</module>
+		<module>vhub-partner-2</module>
+		<module>vhub-partner-3</module>
 		<module>vhub-consumer-1</module>
 		<module>vhub-consumer-2</module>
 		<module>vhub-consumer-3</module>
