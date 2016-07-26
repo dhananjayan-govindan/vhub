@@ -54,10 +54,8 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 	</bean>
 
 	<camel-cxf:rsServer id="rsServer" address="/vhub/hub"
-		serviceClass="com.virtusa.vhub.hub.CommandRouterResource">
-		<camel-cxf:features>
-			<bean class="org.apache.cxf.feature.LoggingFeature" />
-		</camel-cxf:features>
+		serviceClass="com.virtusa.vhub.hub.CommandRouterResource"
+		loggingFeatureEnabled="true">
 	</camel-cxf:rsServer>
 
 	<camelContext id="commandRouterContext"
@@ -70,25 +68,50 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 
 		<!-- Route - Partner to Hub -->
 		<camel:route id="commnandInRoute">
-			<camel:from uri="cxfrs://bean://rsServer" />
-			<!-- <camel:marshal ref="jaxbDataFormat" /> -->
-			<camel:marshal ref="jsonDataFormat" />
-			<camel:choice>
-				<camel:when>
-					<camel:simple>$simple{header.CommandType} == 'COMMAND1'</camel:simple>
-					<camel:to uri="direct:consumer1-in" />
-				</camel:when>
-				<camel:when>
-					<camel:simple>$simple{header.CommandType} == 'COMMAND2'</camel:simple>
-					<camel:to uri="direct:consumer2-in" />
-				</camel:when>
-				<camel:otherwise>
-					<camel:multicast strategyRef="commandResponseAggregationStrategy">
+			<camel:from uri="cxfrs://bean://rsServer?bindingStyle=SimpleConsumer" />
+			<camel:marshal ref="jaxbDataFormat" />
+			<!-- <camel:marshal ref="jsonDataFormat" /> -->
+			<camel:doTry>
+				<camel:to uri="validator:CommadRouter.xsd" />
+				<camel:validate>
+					<camel:simple>${in.header.ThrowExceptionAtHub} != 'true'</camel:simple>
+				</camel:validate>
+				<camel:choice>
+					<camel:when>
+						<camel:simple>$simple{header.CommandType} == 'COMMAND1'</camel:simple>
+						<camel:to uri="direct:consumer1-in" />
+					</camel:when>
+					<camel:when>
+						<camel:simple>$simple{header.CommandType} == 'COMMAND2'</camel:simple>
 						<camel:to uri="direct:consumer2-in" />
-						<camel:to uri="direct:consumer3-in" />
-					</camel:multicast>
-				</camel:otherwise>
-			</camel:choice>
+					</camel:when>
+					<camel:otherwise>
+						<camel:multicast strategyRef="commandResponseAggregationStrategy">
+							<camel:to uri="direct:consumer2-in" />
+							<camel:to uri="direct:consumer3-in" />
+						</camel:multicast>
+					</camel:otherwise>
+				</camel:choice>
+				<camel:doCatch>
+					<exception>org.apache.camel.ValidationException</exception>
+					<camel:to uri="log:EXCEPTION?showAll=true" />
+					<camel:setBody>
+						<camel:simple>
+							${ref:exception400Response}
+						</camel:simple>
+					</camel:setBody>
+				</camel:doCatch>
+				<camel:doCatch>
+					<camel:exception>org.apache.camel.processor.validation.PredicateValidationException</camel:exception>
+					<camel:exception>java.lang.Exception</camel:exception>
+					<camel:to uri="log:EXCEPTION?showAll=true" />
+					<camel:setBody>
+						<camel:simple>
+							${ref:exception500Response}
+						</camel:simple>
+					</camel:setBody>
+				</camel:doCatch>
+			</camel:doTry>
 		</camel:route>
 
 		<!-- Routes - Hub to Consumer and Initial response from Consumer to Hub 
@@ -133,4 +156,30 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		</camel:route>
 	</camelContext>
 
+	<bean id="exception400Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity">
+		<property name="ackType" value="INITIAL" />
+		<property name="commandResults">
+			<list>
+				<bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus">
+					<property name="executorId" value="vHub" />
+					<property name="statusCode" value="400" />
+					<property name="statusDescription"
+						value="Data validation failed, please correct and resend." />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean id="exception500Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity">
+		<property name="ackType" value="INITIAL" />
+		<property name="commandResults">
+			<list>
+				<bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus">
+					<property name="executorId" value="vHub" />
+					<property name="statusCode" value="500" />
+					<property name="statusDescription"
+						value="Something went wrong while routing your request, please try agin later." />
+				</bean>
+			</list>
+		</property>
+	</bean>
 </blueprint>

@@ -9,11 +9,11 @@ import javax.ws.rs.core.MediaType;
 import com.virtusa.vhub.common.entity.CommandRequestEntity;
 import com.virtusa.vhub.common.entity.CommandResponseEntity;
 
-@Path("/api")
+@Path("/api/commandRouter")
 public interface CommandRouterResource {
 	@POST
 	@Consumes({ MediaType.APPLICATION_XML })
 	@Produces({ MediaType.APPLICATION_XML })
-	@Path("/commandRouter")
-	public CommandResponseEntity sendData(CommandRequestEntity command);
+	public CommandResponseEntity routeCommand(CommandRequestEntity command);
+
 }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<!-- <xs:schema targetNamespace="http://www.virtusa.com/vhub/commadRouter" 
+		xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:tns="http://www.virtusa.com/vhub/commadRouter"> -->
+
+	<xs:element name="commandRequest" type="commandRequestEntity" />
+
+	<xs:element name="commandResponse" type="commandResponseEntity" />
+
+	<xs:element name="status" type="commandExecutionStatus" />
+
+	<xs:complexType name="commandResponseEntity">
+		<xs:sequence>
+			<xs:element name="ackType" type="ackType" minOccurs="0" />
+			<xs:element name="command" type="commandRequestEntity"
+				minOccurs="0" />
+			<xs:element name="commandResults" type="commandExecutionStatus"
+				nillable="true" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="commandRequestEntity">
+		<xs:sequence>
+			<xs:element name="command" type="xs:string" minOccurs="0" />
+			<xs:element name="id" type="xs:int" />
+			<xs:element name="type" type="xs:string" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="commandExecutionStatus">
+		<xs:sequence>
+			<xs:element name="executorId" type="xs:string" minOccurs="0" />
+			<xs:element name="statusCode" type="xs:string" minOccurs="0" />
+			<xs:element name="statusDescription" type="xs:string"
+				minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:simpleType name="ackType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="INITIAL" />
+			<xs:enumeration value="FINAL" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
