@@ -10,10 +10,9 @@ import com.virtusa.vhub.common.entity.CommandResponseEntity;
 
 @Path("/api/commandInvoker")
 public interface CommandInvokerResource {
-	@GET
-	@Produces(MediaType.APPLICATION_XML)
-	@Path("/{command}")
-	public CommandResponseEntity buildAndInvoke(
-			@PathParam("command") String commandName);
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("/{command}")
+    public CommandResponseEntity buildAndInvoke(@PathParam("command") String commandName);
 
 }

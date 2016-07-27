@@ -11,9 +11,9 @@ import com.virtusa.vhub.common.entity.CommandResponseEntity;
 
 @Path("/api/commandRouter")
 public interface CommandRouterResource {
-	@POST
-	@Consumes({ MediaType.APPLICATION_XML })
-	@Produces({ MediaType.APPLICATION_XML })
-	public CommandResponseEntity routeCommand(CommandRequestEntity command);
+    @POST
+    @Consumes({ MediaType.APPLICATION_XML })
+    @Produces({ MediaType.APPLICATION_XML })
+    public CommandResponseEntity routeCommand(CommandRequestEntity command);
 
 }

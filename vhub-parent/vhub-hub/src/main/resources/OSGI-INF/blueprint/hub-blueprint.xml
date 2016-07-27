@@ -12,15 +12,9 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 	<cm:property-placeholder id="vhubHubProperties"
 		persistent-id="com.virtusa.vhub.vhub_hub" update-strategy="reload">
 		<cm:default-properties>
-			<!-- <cm:property name="mq.brokerURL" value="tcp://localhost:61616" /> 
-				<cm:property name="mq.userName" value="karaf" /> <cm:property name="mq.password" 
-				value="karaf" /> <cm:property name="queue.consumer1.req" value="VHUB.COMMAND.CONS1.REQ" 
-				/> <cm:property name="queue.consumer1.res" value="VHUB.COMMAND.CONS1.RES" 
-				/> <cm:property name="queue.consumer2.req" value="VHUB.COMMAND.CONS2.REQ" 
-				/> <cm:property name="queue.consumer2.res" value="VHUB.COMMAND.CONS2.RES" 
-				/> <cm:property name="queue.consumer3.req" value="VHUB.COMMAND.CONS3.REQ" 
-				/> <cm:property name="queue.consumer3.res" value="VHUB.COMMAND.CONS3.RES" 
-				/> -->
+			<cm:property name="mq.brokerURL" value="tcp://localhost:61616" />
+			<cm:property name="mq.userName" value="karaf" />
+			<cm:property name="mq.password" value="karaf" />
 		</cm:default-properties>
 	</cm:property-placeholder>
 
@@ -142,6 +136,8 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		<camel:route>
 			<camel:from
 				uri="jmscomp:{{queue.consumer1.res}}?selector=AckType='FINAL'" />
+			<!-- <camel:setHeader headerName="Exchange.HTTP_URI"> <camel:simple>$simple{header.CommandCallBackUrl}</camel:simple> 
+				</camel:setHeader> -->
 			<camel:toD uri="http4://$simple{header.CommandCallBackUrl}" />
 		</camel:route>
 		<camel:route>
@@ -163,8 +159,7 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 				<bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus">
 					<property name="executorId" value="vHub" />
 					<property name="statusCode" value="400" />
-					<property name="statusDescription"
-						value="Data validation failed, please correct and resend." />
+					<property name="statusDescription" value="Data validation failed" />
 				</bean>
 			</list>
 		</property>

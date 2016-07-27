@@ -8,22 +8,18 @@ import org.slf4j.LoggerFactory;
 import com.virtusa.vhub.common.entity.CommandResponseEntity;
 
 public class CommandResponseAggregationStrategy implements AggregationStrategy {
-	Logger log = LoggerFactory
-			.getLogger(CommandResponseAggregationStrategy.class);
+    Logger log = LoggerFactory.getLogger(CommandResponseAggregationStrategy.class);
 
-	@Override
-	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-		log.info("Aggerating messages...");
-		if (oldExchange == null) {
-			return newExchange;
-		}
-		CommandResponseEntity commandResponseEntityOld = oldExchange.getIn()
-				.getBody(CommandResponseEntity.class);
-		CommandResponseEntity commandResponseEntityNew = newExchange.getIn()
-				.getBody(CommandResponseEntity.class);
-		commandResponseEntityOld.getCommandResults().add(
-				commandResponseEntityNew.getCommandResults().get(0));
-		return oldExchange;
-	}
+    @Override
+    public Exchange aggregate(final Exchange oldExchange, final Exchange newExchange) {
+        log.info("Aggerating messages...");
+        if (oldExchange == null) {
+            return newExchange;
+        }
+        final CommandResponseEntity commandResponseEntityOld = oldExchange.getIn().getBody(CommandResponseEntity.class);
+        final CommandResponseEntity commandResponseEntityNew = newExchange.getIn().getBody(CommandResponseEntity.class);
+        commandResponseEntityOld.getCommandResults().add(commandResponseEntityNew.getCommandResults().get(0));
+        return oldExchange;
+    }
 
 }

@@ -18,74 +18,69 @@ import com.virtusa.vhub.consumer2.entity.CommandMessageWrapper;
 import com.virtusa.vhub.consumer2.executor.CommandExecutor;
 
 public class CommandMessageListener implements MessageListener {
-	private static final Logger log = LoggerFactory
-			.getLogger(CommandMessageListener.class);
+    private static final Logger log = LoggerFactory.getLogger(CommandMessageListener.class);
 
-	private QueueConnectionFactory connectionFactory;
-	private Queue queue;
-	private String applicationName;
+    private QueueConnectionFactory connectionFactory;
+    private Queue queue;
+    private String applicationName;
 
-	public void init() {
-		try {
-			QueueConnection queueConnection = connectionFactory
-					.createQueueConnection();
-			QueueSession queueSession = queueConnection.createQueueSession(
-					false, Session.AUTO_ACKNOWLEDGE);
-			QueueReceiver queueReciever = queueSession.createReceiver(queue);
-			queueReciever.setMessageListener(this);
-			queueConnection.start();
-		} catch (JMSException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public void init() {
+        try {
+            final QueueConnection queueConnection = connectionFactory.createQueueConnection();
+            final QueueSession queueSession = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            final QueueReceiver queueReciever = queueSession.createReceiver(queue);
+            queueReciever.setMessageListener(this);
+            queueConnection.start();
+        } catch (final JMSException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public void onMessage(Message message) {
-		if (!TextMessage.class.isAssignableFrom(message.getClass())) {
-			log.warn("The received message is not of type TextMessage, hence ignoring!");
-			return;
-		}
-		try {
-			TextMessage textMessage = (TextMessage) message;
-			log.info("Command Received Is: " + textMessage.getText());
-			CommandMessageWrapper commandMessageWrapper = new CommandMessageWrapper();
-			// TODO: set Command object
-			commandMessageWrapper.setCommand(null);
-			commandMessageWrapper.setCorrelationId(message
-					.getJMSCorrelationID());
-			commandMessageWrapper.setReplyTo(message.getJMSReplyTo());
-			commandMessageWrapper.setCommandCallbackUrl(message
-					.getStringProperty("CommandCallbackUrl"));
-			commandMessageWrapper.setExecutorId(applicationName);
-			new Thread(new CommandExecutor(commandMessageWrapper,
-					connectionFactory)).start();
-		} catch (JMSException e) {
-			log.error("Problem in consuming a message.", e);
-		}
-	}
+    @Override
+    public void onMessage(final Message message) {
+        if (!TextMessage.class.isAssignableFrom(message.getClass())) {
+            log.warn("The received message is not of type TextMessage, hence ignoring!");
+            return;
+        }
+        try {
+            final TextMessage textMessage = (TextMessage) message;
+            log.info("Command Received Is: " + textMessage.getText());
+            final CommandMessageWrapper commandMessageWrapper = new CommandMessageWrapper();
+            // TODO: set Command object
+            commandMessageWrapper.setCommand(null);
+            commandMessageWrapper.setCorrelationId(message.getJMSCorrelationID());
+            commandMessageWrapper.setReplyTo(message.getJMSReplyTo());
+            commandMessageWrapper.setCommandCallbackUrl(message.getStringProperty("CommandCallbackUrl"));
+            commandMessageWrapper.setExecutorId(applicationName);
+            commandMessageWrapper.setThrowExceptionAtConsumer(message.getBooleanProperty("ThrowExceptionAtConsumer"));
+            new Thread(new CommandExecutor(commandMessageWrapper, connectionFactory)).start();
+        } catch (final JMSException e) {
+            log.error("Problem in consuming a message.", e);
+        }
+    }
 
-	public QueueConnectionFactory getConnectionFactory() {
-		return connectionFactory;
-	}
+    public QueueConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
 
-	public void setConnectionFactory(QueueConnectionFactory connectionFactory) {
-		this.connectionFactory = connectionFactory;
-	}
+    public void setConnectionFactory(final QueueConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
 
-	public Queue getQueue() {
-		return queue;
-	}
+    public Queue getQueue() {
+        return queue;
+    }
 
-	public void setQueue(Queue queue) {
-		this.queue = queue;
-	}
+    public void setQueue(final Queue queue) {
+        this.queue = queue;
+    }
 
-	public String getApplicationName() {
-		return applicationName;
-	}
+    public String getApplicationName() {
+        return applicationName;
+    }
 
-	public void setApplicationName(String applicationName) {
-		this.applicationName = applicationName;
-	}
+    public void setApplicationName(final String applicationName) {
+        this.applicationName = applicationName;
+    }
 
 }
