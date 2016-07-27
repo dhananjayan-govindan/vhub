@@ -22,16 +22,34 @@
 
 	<xs:complexType name="commandRequestEntity">
 		<xs:sequence>
-			<xs:element name="command" type="xs:string" minOccurs="0" />
-			<xs:element name="id" type="xs:int" />
-			<xs:element name="type" type="xs:string" minOccurs="0" />
+			<xs:element name="command" minOccurs="1" maxOccurs="1">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"></xs:minLength>
+						<xs:maxLength value="20"></xs:maxLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="id" type="xs:int" minOccurs="1"
+				maxOccurs="1" />
+			<xs:element name="type" minOccurs="1" maxOccurs="1">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="COMMAND1" />
+						<xs:enumeration value="COMMAND2" />
+						<xs:enumeration value="COMMAND3" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 
 	<xs:complexType name="commandExecutionStatus">
 		<xs:sequence>
-			<xs:element name="executorId" type="xs:string" minOccurs="0" />
-			<xs:element name="statusCode" type="xs:string" minOccurs="0" />
+			<xs:element name="executorId" type="xs:string" minOccurs="1"
+				maxOccurs="1" />
+			<xs:element name="statusCode" type="xs:string" minOccurs="1"
+				maxOccurs="1" />
 			<xs:element name="statusDescription" type="xs:string"
 				minOccurs="0" />
 		</xs:sequence>

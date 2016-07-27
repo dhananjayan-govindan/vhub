@@ -80,30 +80,32 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 						<camel:to uri="direct:consumer2-in" />
 					</camel:when>
 					<camel:otherwise>
-						<camel:multicast strategyRef="commandResponseAggregationStrategy">
-							<camel:to uri="direct:consumer2-in" />
-							<camel:to uri="direct:consumer3-in" />
+						<camel:multicast strategyRef="commandResponseAggregationStrategy"
+							parallelProcessing="true" parallelAggregate="true" streaming="true"
+							stopOnException="false">
+							<camel:to uri="direct:consumer2-in" id="to-direct-consumer2" />
+							<camel:to uri="direct:consumer3-in" id="to-direct-consumer3" />
 						</camel:multicast>
 					</camel:otherwise>
 				</camel:choice>
 				<camel:doCatch>
 					<exception>org.apache.camel.ValidationException</exception>
-					<camel:to uri="log:EXCEPTION?showAll=true" />
-					<camel:setBody>
-						<camel:simple>
-							${ref:exception400Response}
-						</camel:simple>
-					</camel:setBody>
+					<exception>org.apache.camel.processor.validation.SchemaValidationException</exception>
+					<camel:to uri="log:EXCEPTION?level=ERROR&amp;showAll=true" />
+					<!-- <camel:setBody> <camel:simple> ${ref:exception400Response} </camel:simple> 
+						</camel:setBody> -->
+					<camel:bean
+						beanType="com.virtusa.vhub.hub.util.CommandExceptionResponseUtil"
+						method="getExcpetionResponse($simple{exception})" id="excpetionResponse" />
 				</camel:doCatch>
 				<camel:doCatch>
-					<camel:exception>org.apache.camel.processor.validation.PredicateValidationException</camel:exception>
-					<camel:exception>java.lang.Exception</camel:exception>
-					<camel:to uri="log:EXCEPTION?showAll=true" />
-					<camel:setBody>
-						<camel:simple>
-							${ref:exception500Response}
-						</camel:simple>
-					</camel:setBody>
+					<camel:exception>org.apache.camel.CamelException</camel:exception>
+					<camel:to uri="log:EXCEPTION?level=ERROR&amp;showAll=true" />
+					<!-- <camel:setBody> <camel:simple> ${ref:excpetionResponse} </camel:simple> 
+						</camel:setBody> -->
+					<camel:bean
+						beanType="com.virtusa.vhub.hub.util.CommandExceptionResponseUtil"
+						method="getExcpetionResponse($simple{exception})" id="excpetionResponse" />
 				</camel:doCatch>
 			</camel:doTry>
 		</camel:route>
@@ -152,29 +154,15 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		</camel:route>
 	</camelContext>
 
-	<bean id="exception400Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity">
-		<property name="ackType" value="INITIAL" />
-		<property name="commandResults">
-			<list>
-				<bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus">
-					<property name="executorId" value="vHub" />
-					<property name="statusCode" value="400" />
-					<property name="statusDescription" value="Data validation failed" />
-				</bean>
-			</list>
-		</property>
-	</bean>
-	<bean id="exception500Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity">
-		<property name="ackType" value="INITIAL" />
-		<property name="commandResults">
-			<list>
-				<bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus">
-					<property name="executorId" value="vHub" />
-					<property name="statusCode" value="500" />
-					<property name="statusDescription"
-						value="Something went wrong while routing your request, please try agin later." />
-				</bean>
-			</list>
-		</property>
-	</bean>
+	<!-- <bean id="exception400Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity"> 
+		<property name="ackType" value="INITIAL" /> <property name="commandResults"> 
+		<list> <bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus"> 
+		<property name="executorId" value="vHub" /> <property name="statusCode" value="400" 
+		/> <property name="statusDescription" value="Data validation failed" /> </bean> 
+		</list> </property> </bean> <bean id="exception500Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity"> 
+		<property name="ackType" value="INITIAL" /> <property name="commandResults"> 
+		<list> <bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus"> 
+		<property name="executorId" value="vHub" /> <property name="statusCode" value="500" 
+		/> <property name="statusDescription" value="Something went wrong while routing 
+		your request, please try agin later." /> </bean> </list> </property> </bean> -->
 </blueprint>
