@@ -30,6 +30,7 @@
 		<karaf.version>4.0.5</karaf.version>
 		<jaxrs-api.version>2.0.1</jaxrs-api.version>
 		<jaxb-api.version>2.2.11</jaxb-api.version>
+		<pax-exam.version>4.9.1</pax-exam.version>
 
 		<maven-bundle-plugin.version>3.0.1</maven-bundle-plugin.version>
 		<karaf-maven-plugin.version>${karaf.version}</karaf-maven-plugin.version>
@@ -119,6 +120,20 @@
 				<scope>provided</scope>
 			</dependency>
 
+			<!-- Camel Testing -->
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-test</artifactId>
+				<version>${camel.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-test-blueprint</artifactId>
+				<version>${camel.version}</version>
+				<scope>test</scope>
+			</dependency>
+
 			<!-- CXF -->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
@@ -156,6 +171,10 @@
 				<version>${slf4j.version}</version>
 				<scope>provided</scope>
 			</dependency>
+
+			<!-- OPS4j's Pax Exam -->
+			<!-- <dependency> <groupId>org.ops4j.pax.exam</groupId> <artifactId>pax-exam-junit4</artifactId> 
+				<version>${pax-exam.version}</version> <scope>test</scope> </dependency> -->
 
 		</dependencies>
 	</dependencyManagement>

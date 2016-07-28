@@ -62,33 +62,39 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 
 		<!-- Route - Partner to Hub -->
 		<camel:route id="commnandInRoute">
-			<camel:from uri="cxfrs://bean://rsServer?bindingStyle=SimpleConsumer" />
-			<camel:marshal ref="jaxbDataFormat" />
+			<camel:from uri="cxfrs://bean://rsServer?bindingStyle=SimpleConsumer"
+				id="consumeCommandRequestFromPartner" />
+			<camel:marshal ref="jaxbDataFormat" id="marshalToXml" />
 			<!-- <camel:marshal ref="jsonDataFormat" /> -->
 			<camel:doTry>
-				<camel:to uri="validator:CommadRouter.xsd" />
-				<camel:validate>
+				<camel:to uri="validator:CommadRouter.xsd" id="validateCommandRequest" />
+				<camel:validate id="checkIfThrowExceptionAtHubHeaderIsTrue">
 					<camel:simple>${in.header.ThrowExceptionAtHub} != 'true'</camel:simple>
 				</camel:validate>
-				<camel:choice>
-					<camel:when>
+				<camel:choice id="branchByCommandType">
+					<camel:when id="ifCommandTypeIsCommand1">
 						<camel:simple>$simple{header.CommandType} == 'COMMAND1'</camel:simple>
 						<camel:to uri="direct:consumer1-in" />
 					</camel:when>
-					<camel:when>
+					<camel:when id="ifCommandTypeIsCommand2">
 						<camel:simple>$simple{header.CommandType} == 'COMMAND2'</camel:simple>
 						<camel:to uri="direct:consumer2-in" />
 					</camel:when>
-					<camel:otherwise>
+					<camel:when id="ifCommandTypeIsCommand3">
+						<camel:simple>$simple{header.CommandType} == 'COMMAND3'</camel:simple>
 						<camel:multicast strategyRef="commandResponseAggregationStrategy"
 							parallelProcessing="true" parallelAggregate="true" streaming="true"
-							stopOnException="false">
+							stopOnException="false" id="multicastCommandToConsumers">
 							<camel:to uri="direct:consumer2-in" id="to-direct-consumer2" />
 							<camel:to uri="direct:consumer3-in" id="to-direct-consumer3" />
 						</camel:multicast>
+					</camel:when>
+					<camel:otherwise id="otherwiseAssumingItIsCommand3">
+						<camel:throwException exceptionType="org.apache.camel.CamelException"
+							message="Invalid CommandType $simple{header.CommandType}"></camel:throwException>
 					</camel:otherwise>
 				</camel:choice>
-				<camel:doCatch>
+				<camel:doCatch id="catchValidationException">
 					<exception>org.apache.camel.ValidationException</exception>
 					<exception>org.apache.camel.processor.validation.SchemaValidationException</exception>
 					<camel:to uri="log:EXCEPTION?level=ERROR&amp;showAll=true" />
@@ -98,7 +104,7 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 						beanType="com.virtusa.vhub.hub.util.CommandExceptionResponseUtil"
 						method="getExcpetionResponse($simple{exception})" id="excpetionResponse" />
 				</camel:doCatch>
-				<camel:doCatch>
+				<camel:doCatch id="catchOtherCamelExceptions">
 					<camel:exception>org.apache.camel.CamelException</camel:exception>
 					<camel:to uri="log:EXCEPTION?level=ERROR&amp;showAll=true" />
 					<!-- <camel:setBody> <camel:simple> ${ref:excpetionResponse} </camel:simple> 
@@ -112,21 +118,21 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 
 		<!-- Routes - Hub to Consumer and Initial response from Consumer to Hub 
 			and to Partner -->
-		<camel:route>
+		<camel:route id="directToConsumer1">
 			<camel:from uri="direct:consumer1-in" />
 			<camel:to
 				uri="jmscomp:{{queue.consumer1.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer1.res}}"
 				pattern="InOut" />
 			<camel:unmarshal ref="jaxbDataFormat" />
 		</camel:route>
-		<camel:route>
+		<camel:route id="directToConsumer2">
 			<camel:from uri="direct:consumer2-in" />
 			<camel:to
 				uri="jmscomp:{{queue.consumer2.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer2.res}}"
 				pattern="InOut" />
 			<camel:unmarshal ref="jaxbDataFormat" />
 		</camel:route>
-		<camel:route>
+		<camel:route id="directToConsumer3">
 			<camel:from uri="direct:consumer3-in" />
 			<camel:to
 				uri="jmscomp:{{queue.consumer3.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer3.res}}"
@@ -135,34 +141,23 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		</camel:route>
 
 		<!-- Routes - Consumer to Hub and to Partner -->
-		<camel:route>
+		<camel:route id="consumer1ToPartner">
 			<camel:from
 				uri="jmscomp:{{queue.consumer1.res}}?selector=AckType='FINAL'" />
 			<!-- <camel:setHeader headerName="Exchange.HTTP_URI"> <camel:simple>$simple{header.CommandCallBackUrl}</camel:simple> 
 				</camel:setHeader> -->
 			<camel:toD uri="http4://$simple{header.CommandCallBackUrl}" />
 		</camel:route>
-		<camel:route>
+		<camel:route id="consumer2ToPartner">
 			<camel:from
 				uri="jmscomp:{{queue.consumer2.res}}?selector=AckType='FINAL'" />
 			<camel:toD uri="http4://$simple{header.CommandCallBackUrl}" />
 		</camel:route>
-		<camel:route>
+		<camel:route id="consumer3ToPartner">
 			<camel:from
 				uri="jmscomp:{{queue.consumer3.res}}?selector=AckType='FINAL'" />
 			<camel:toD uri="http4://$simple{header.CommandCallBackUrl}" />
 		</camel:route>
 	</camelContext>
 
-	<!-- <bean id="exception400Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity"> 
-		<property name="ackType" value="INITIAL" /> <property name="commandResults"> 
-		<list> <bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus"> 
-		<property name="executorId" value="vHub" /> <property name="statusCode" value="400" 
-		/> <property name="statusDescription" value="Data validation failed" /> </bean> 
-		</list> </property> </bean> <bean id="exception500Response" class="com.virtusa.vhub.common.entity.CommandResponseEntity"> 
-		<property name="ackType" value="INITIAL" /> <property name="commandResults"> 
-		<list> <bean class="com.virtusa.vhub.common.entity.CommandExecutionStatus"> 
-		<property name="executorId" value="vHub" /> <property name="statusCode" value="500" 
-		/> <property name="statusDescription" value="Something went wrong while routing 
-		your request, please try agin later." /> </bean> </list> </property> </bean> -->
 </blueprint>
