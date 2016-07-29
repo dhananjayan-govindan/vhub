@@ -12,12 +12,6 @@ public class CommnandInRouteTest extends BaseCamelTest {
     @EndpointInject(uri = "mock:consumer1Endpoint")
     private MockEndpoint consumer1Endpoint;
 
-    @EndpointInject(uri = "mock:consumer2Endpoint")
-    private MockEndpoint consumer2Endpoint;
-
-    @EndpointInject(uri = "mock:consumer3Endpoint")
-    private MockEndpoint consumer3Endpoint;
-
     @Produce(uri = "direct:commandRequestFromPartner")
     private ProducerTemplate producerTemplate;
 
@@ -30,41 +24,39 @@ public class CommnandInRouteTest extends BaseCamelTest {
 
     @Test
     public void testIfCommandTypeIsNotCommand1() throws Exception {
-        consumer1Endpoint.expectedMessageCount(0);
+        getMockEndpoint("mock:consumer1Endpoint").expectedMessageCount(0);
         producerTemplate.sendBodyAndHeader("Dummy Body", "CommandType", "COMMAND123");
-        consumer1Endpoint.assertIsSatisfied();
+        assertMockEndpointsSatisfied();
     }
 
     @Test
     public void testIfCommandTypeIsCommand2() throws Exception {
-        consumer2Endpoint.expectedMessageCount(1);
+        getMockEndpoint("mock:consumer2Endpoint").expectedMessageCount(1);
         producerTemplate.sendBodyAndHeader("Dummy Body", "CommandType", "COMMAND2");
-        consumer2Endpoint.assertIsSatisfied();
+        assertMockEndpointsSatisfied();
     }
 
     @Test
     public void testIfCommandTypeIsNotCommand2() throws Exception {
-        consumer2Endpoint.expectedMessageCount(0);
+        getMockEndpoint("mock:consumer2Endpoint").expectedMessageCount(0);
         producerTemplate.sendBodyAndHeader("Dummy Body", "CommandType", "COMMAND123");
-        consumer2Endpoint.assertIsSatisfied();
+        assertMockEndpointsSatisfied();
     }
 
     @Test
     public void testIfCommandTypeIsCommand3() throws Exception {
-        consumer2Endpoint.expectedMessageCount(1);
-        consumer3Endpoint.expectedMessageCount(1);
+        getMockEndpoint("mock:consumer2Endpoint").expectedMessageCount(1);
+        getMockEndpoint("mock:consumer3Endpoint").expectedMessageCount(1);
         producerTemplate.sendBodyAndHeader("Dummy Body", "CommandType", "COMMAND3");
-        consumer2Endpoint.assertIsSatisfied();
-        consumer3Endpoint.assertIsSatisfied();
+        assertMockEndpointsSatisfied();
     }
 
     @Test
     public void testIfCommandTypeIsNotCommand3() throws Exception {
-        consumer2Endpoint.expectedMessageCount(0);
-        consumer3Endpoint.expectedMessageCount(0);
+        getMockEndpoint("mock:consumer2Endpoint").expectedMessageCount(0);
+        getMockEndpoint("mock:consumer3Endpoint").expectedMessageCount(0);
         producerTemplate.sendBodyAndHeader("Dummy Body", "CommandType", "COMMAND123");
-        consumer2Endpoint.assertIsSatisfied();
-        consumer3Endpoint.assertIsSatisfied();
+        assertMockEndpointsSatisfied();
     }
 
     @Override

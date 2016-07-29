@@ -48,6 +48,7 @@ public class CommandMessageListener implements MessageListener {
             final CommandMessageWrapper commandMessageWrapper = new CommandMessageWrapper();
             // TODO: set Command object
             commandMessageWrapper.setCommand(null);
+            commandMessageWrapper.setMessageId(message.getJMSMessageID());
             commandMessageWrapper.setCorrelationId(message.getJMSCorrelationID());
             commandMessageWrapper.setReplyTo(message.getJMSReplyTo());
             commandMessageWrapper.setCommandCallbackUrl(message.getStringProperty("CommandCallbackUrl"));

@@ -57,15 +57,16 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		<!-- <camel:propertyPlaceholder location="blueprint:vhubHubProperties" 
 			/> -->
 		<camel:dataFormats>
-			<json id="jsonDataFormat" library="Jackson" />
+			<camel:json id="jsonDataFormat" library="Jackson"
+				unmarshalTypeName="com.virtusa.vhub.common.entity.CommandResponseEntity" />
+			<camel:xmljson id="xmlJsonDataFormat" />
+			<camel:string />
 		</camel:dataFormats>
 
 		<!-- Route - Partner to Hub -->
 		<camel:route id="commnandInRoute">
 			<camel:from uri="cxfrs://bean://rsServer?bindingStyle=SimpleConsumer"
 				id="consumeCommandRequestFromPartner" />
-			<camel:marshal ref="jaxbDataFormat" id="marshalToXml" />
-			<!-- <camel:marshal ref="jsonDataFormat" /> -->
 			<camel:doTry>
 				<camel:to uri="validator:CommadRouter.xsd" id="validateCommandRequest" />
 				<camel:validate id="checkIfThrowExceptionAtHubHeaderIsTrue">
@@ -89,7 +90,7 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 							<camel:to uri="direct:consumer3-in" id="to-direct-consumer3" />
 						</camel:multicast>
 					</camel:when>
-					<camel:otherwise id="otherwiseAssumingItIsCommand3">
+					<camel:otherwise id="otherwiseThrowAnException">
 						<camel:throwException exceptionType="org.apache.camel.CamelException"
 							message="Invalid CommandType $simple{header.CommandType}"></camel:throwException>
 					</camel:otherwise>
@@ -120,23 +121,23 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 			and to Partner -->
 		<camel:route id="directToConsumer1">
 			<camel:from uri="direct:consumer1-in" />
+			<camel:marshal ref="jaxbDataFormat" />
 			<camel:to
-				uri="jmscomp:{{queue.consumer1.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer1.res}}"
-				pattern="InOut" />
+				uri="jmscomp:{{queue.consumer1.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer1.res}}" />
 			<camel:unmarshal ref="jaxbDataFormat" />
 		</camel:route>
 		<camel:route id="directToConsumer2">
 			<camel:from uri="direct:consumer2-in" />
+			<camel:marshal ref="jsonDataFormat" />
 			<camel:to
-				uri="jmscomp:{{queue.consumer2.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer2.res}}"
-				pattern="InOut" />
-			<camel:unmarshal ref="jaxbDataFormat" />
+				uri="jmscomp:{{queue.consumer2.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer2.res}}&amp;useMessageIDAsCorrelationID=true" />
+			<camel:unmarshal ref="jsonDataFormat" />
 		</camel:route>
 		<camel:route id="directToConsumer3">
 			<camel:from uri="direct:consumer3-in" />
+			<camel:marshal ref="jaxbDataFormat" />
 			<camel:to
-				uri="jmscomp:{{queue.consumer3.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer3.res}}"
-				pattern="InOut" />
+				uri="jmscomp:{{queue.consumer3.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer3.res}}" />
 			<camel:unmarshal ref="jaxbDataFormat" />
 		</camel:route>
 
@@ -151,6 +152,7 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		<camel:route id="consumer2ToPartner">
 			<camel:from
 				uri="jmscomp:{{queue.consumer2.res}}?selector=AckType='FINAL'" />
+			<camel:unmarshal ref="jsonDataFormat" />
 			<camel:toD uri="http4://$simple{header.CommandCallBackUrl}" />
 		</camel:route>
 		<camel:route id="consumer3ToPartner">

@@ -11,11 +11,11 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.xml.bind.JAXBContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.virtusa.vhub.common.entity.CommandExecutionStatus;
 import com.virtusa.vhub.common.entity.CommandResponseEntity;
 import com.virtusa.vhub.common.entity.CommandResponseEntity.AckType;
@@ -43,8 +43,6 @@ public class CommandResponderTask implements Runnable {
             try {
                 final QueueSession queueSession = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
                 final Queue queue = (Queue) commandMessageWrapper.getReplyTo();
-                // Queue queue = queueSession
-                // .createQueue("VHUB.COMMAND.CONS1.RES");
                 final QueueSender queueSender = queueSession.createSender(queue);
 
                 final CommandResponseEntity response = new CommandResponseEntity();
@@ -65,15 +63,19 @@ public class CommandResponderTask implements Runnable {
                 response.setCommandResults(Collections.singletonList(status));
 
                 final StringWriter writer = new StringWriter();
-                final JAXBContext context = JAXBContext.newInstance(CommandResponseEntity.class);
-                context.createMarshaller().marshal(response, writer);
+                final ObjectMapper mapper = new ObjectMapper();
+                mapper.writeValue(writer, response);
+
                 final TextMessage textMessage = queueSession.createTextMessage();
-                textMessage.setJMSCorrelationID(commandMessageWrapper.getCorrelationId());
+
                 textMessage.setStringProperty("CommandCallbackUrl", commandMessageWrapper.getCommandCallbackUrl());
                 textMessage.setStringProperty("AckType", ackType.toString());
-                // textMessage.setJMSCorrelationID(commandMessageWrapper.getMessageId());
-                textMessage.setText(writer.toString());
-                log.info("Sending initial response: {}", writer.toString());
+                // textMessage.setJMSCorrelationID(commandMessageWrapper.getCorrelationId());
+                textMessage.setJMSCorrelationID(commandMessageWrapper.getMessageId());
+
+                String responseBodyText = writer.toString();
+                textMessage.setText(responseBodyText);
+                log.info("Sending " + ackType + " response: {}", responseBodyText);
                 queueSender.send(textMessage);
             } finally {
                 queueConnection.close();

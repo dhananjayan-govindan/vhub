@@ -43,8 +43,6 @@ public class CommandResponderTask implements Runnable {
             try {
                 final QueueSession queueSession = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
                 final Queue queue = (Queue) commandMessageWrapper.getReplyTo();
-                // Queue queue = queueSession
-                // .createQueue("VHUB.COMMAND.CONS1.RES");
                 final QueueSender queueSender = queueSession.createSender(queue);
 
                 final CommandResponseEntity response = new CommandResponseEntity();
@@ -67,13 +65,16 @@ public class CommandResponderTask implements Runnable {
                 final StringWriter writer = new StringWriter();
                 final JAXBContext context = JAXBContext.newInstance(CommandResponseEntity.class);
                 context.createMarshaller().marshal(response, writer);
+
                 final TextMessage textMessage = queueSession.createTextMessage();
-                textMessage.setJMSCorrelationID(commandMessageWrapper.getCorrelationId());
                 textMessage.setStringProperty("CommandCallbackUrl", commandMessageWrapper.getCommandCallbackUrl());
                 textMessage.setStringProperty("AckType", ackType.toString());
+                textMessage.setJMSCorrelationID(commandMessageWrapper.getCorrelationId());
                 // textMessage.setJMSCorrelationID(commandMessageWrapper.getMessageId());
-                textMessage.setText(writer.toString());
-                log.info("Sending initial response: {}", writer.toString());
+
+                String responseBodyText = writer.toString();
+                textMessage.setText(responseBodyText);
+                log.info("Sending " + ackType + " response: {}", responseBodyText);
                 queueSender.send(textMessage);
             } finally {
                 queueConnection.close();

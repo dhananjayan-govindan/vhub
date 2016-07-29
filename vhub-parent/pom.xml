@@ -31,6 +31,7 @@
 		<jaxrs-api.version>2.0.1</jaxrs-api.version>
 		<jaxb-api.version>2.2.11</jaxb-api.version>
 		<pax-exam.version>4.9.1</pax-exam.version>
+		<jackson.version>2.6.3</jackson.version>
 
 		<maven-bundle-plugin.version>3.0.1</maven-bundle-plugin.version>
 		<karaf-maven-plugin.version>${karaf.version}</karaf-maven-plugin.version>
@@ -157,6 +158,11 @@
 			</dependency>
 
 			<!-- Jackson -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
 
 			<!-- SLF4J -->
 			<dependency>
