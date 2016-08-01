@@ -5,6 +5,12 @@ Virtusa Hub service PoC
 ### Requirement
 ---
 
+#### Requirement Overview
+
+[Requirement Overview](Requirement Overview.JPG)
+
+#### Requirement Detail
+
 1. Create an integration exchange platform (IEP) called "vHub", three command invokers/partners (third party organizations), and three command executors/consumers (third party organizations/internal systems)
 2. vHub shall expose a REST web service to receive "commands" from external partners (TPOs).
 	1. Use POST HTTP method
