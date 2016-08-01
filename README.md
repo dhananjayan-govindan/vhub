@@ -7,7 +7,7 @@ Virtusa Hub service PoC
 
 #### Requirement Overview
 
-[Requirement Overview](Requirement Overview.JPG)
+![Requirement Overview](Requirement Overview.JPG)
 
 #### Requirement Detail
 
