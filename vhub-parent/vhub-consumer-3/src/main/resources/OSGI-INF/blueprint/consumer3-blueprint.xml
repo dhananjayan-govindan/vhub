@@ -18,7 +18,7 @@
 		init-method="init">
 		<property name="connectionFactory" ref="connectionFactory" />
 		<property name="queue" ref="queue" />
-		<property name="applicationName" value="${application.name}"></property>
+		<property name="applicationName" value="${application.name}" />
 	</bean>
 
 	<bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">

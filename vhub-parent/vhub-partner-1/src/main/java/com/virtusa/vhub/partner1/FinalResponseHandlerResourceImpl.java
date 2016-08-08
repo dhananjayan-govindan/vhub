@@ -10,6 +10,8 @@ public class FinalResponseHandlerResourceImpl implements FinalResponseHandlerRes
     @Override
     public void processFinalResponse(final String commandResponse) {
         log.info("Final response received is: {}", commandResponse);
+        System.out.println("Final response received is: {}"+commandResponse);
+        
     }
 
 }

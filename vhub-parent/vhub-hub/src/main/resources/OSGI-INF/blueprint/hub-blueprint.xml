@@ -47,6 +47,8 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		<!-- <property name="mustBeJAXBElement" value="false"/> -->
 	</bean>
 
+	<bean id="commandTypeConverter" class="com.virtusa.vhub.hub.camel.typeconverter.CommandTypeConverter" />
+
 	<camel-cxf:rsServer id="rsServer" address="/vhub/hub"
 		serviceClass="com.virtusa.vhub.hub.CommandRouterResource"
 		loggingFeatureEnabled="true">
@@ -56,11 +58,12 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		xmlns="http://camel.apache.org/schema/blueprint">
 		<!-- <camel:propertyPlaceholder location="blueprint:vhubHubProperties" 
 			/> -->
+
 		<camel:dataFormats>
 			<camel:json id="jsonDataFormat" library="Jackson"
 				unmarshalTypeName="com.virtusa.vhub.common.entity.CommandResponseEntity" />
 			<camel:xmljson id="xmlJsonDataFormat" />
-			<camel:string />
+			<camel:csv id="csvDataFormat" useMaps="true" />
 		</camel:dataFormats>
 
 		<!-- Route - Partner to Hub -->
@@ -72,15 +75,18 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 				<camel:validate id="checkIfThrowExceptionAtHubHeaderIsTrue">
 					<camel:simple>${in.header.ThrowExceptionAtHub} != 'true'</camel:simple>
 				</camel:validate>
+
 				<camel:choice id="branchByCommandType">
 					<camel:when id="ifCommandTypeIsCommand1">
 						<camel:simple>$simple{header.CommandType} == 'COMMAND1'</camel:simple>
 						<camel:to uri="direct:consumer1-in" />
 					</camel:when>
+
 					<camel:when id="ifCommandTypeIsCommand2">
 						<camel:simple>$simple{header.CommandType} == 'COMMAND2'</camel:simple>
 						<camel:to uri="direct:consumer2-in" />
 					</camel:when>
+
 					<camel:when id="ifCommandTypeIsCommand3">
 						<camel:simple>$simple{header.CommandType} == 'COMMAND3'</camel:simple>
 						<camel:multicast strategyRef="commandResponseAggregationStrategy"
@@ -90,11 +96,13 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 							<camel:to uri="direct:consumer3-in" id="to-direct-consumer3" />
 						</camel:multicast>
 					</camel:when>
+
 					<camel:otherwise id="otherwiseThrowAnException">
 						<camel:throwException exceptionType="org.apache.camel.CamelException"
 							message="Invalid CommandType $simple{header.CommandType}"></camel:throwException>
 					</camel:otherwise>
 				</camel:choice>
+
 				<camel:doCatch id="catchValidationException">
 					<exception>org.apache.camel.ValidationException</exception>
 					<exception>org.apache.camel.processor.validation.SchemaValidationException</exception>
@@ -105,6 +113,7 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 						beanType="com.virtusa.vhub.hub.util.CommandExceptionResponseUtil"
 						method="getExcpetionResponse($simple{exception})" id="excpetionResponse" />
 				</camel:doCatch>
+
 				<camel:doCatch id="catchOtherCamelExceptions">
 					<camel:exception>org.apache.camel.CamelException</camel:exception>
 					<camel:to uri="log:EXCEPTION?level=ERROR&amp;showAll=true" />
@@ -135,10 +144,13 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		</camel:route>
 		<camel:route id="directToConsumer3">
 			<camel:from uri="direct:consumer3-in" />
-			<camel:marshal ref="jaxbDataFormat" />
+			<camel:convertBodyTo type="java.util.Map" />
+			<camel:marshal ref="csvDataFormat" />
 			<camel:to
 				uri="jmscomp:{{queue.consumer3.req}}?jmsMessageType=Text&amp;replyTo={{queue.consumer3.res}}" />
-			<camel:unmarshal ref="jaxbDataFormat" />
+			<camel:unmarshal ref="csvDataFormat" />
+			<camel:convertBodyTo
+				type="com.virtusa.vhub.common.entity.CommandResponseEntity" />
 		</camel:route>
 
 		<!-- Routes - Consumer to Hub and to Partner -->
@@ -158,6 +170,9 @@ http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/cxf/
 		<camel:route id="consumer3ToPartner">
 			<camel:from
 				uri="jmscomp:{{queue.consumer3.res}}?selector=AckType='FINAL'" />
+			<camel:unmarshal ref="csvDataFormat" />
+			<camel:convertBodyTo
+				type="com.virtusa.vhub.common.entity.CommandResponseEntity" />
 			<camel:toD uri="http4://$simple{header.CommandCallBackUrl}" />
 		</camel:route>
 	</camelContext>
